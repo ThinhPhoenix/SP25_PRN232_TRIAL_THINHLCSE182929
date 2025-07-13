@@ -1,7 +1,10 @@
-﻿using HandbagManagementRepository.Models;
+﻿using System.Threading.Tasks;
+using HandbagManagementRepository.Models;
 using HandbagManagementService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -9,7 +12,7 @@ namespace PRN231_SU25_SE182929.api.Controllers
 {
     [Route("api/handbags")]
     [ApiController]
-    public class HandbagsController : ControllerBase
+    public class HandbagsController : ODataController
     {
         private readonly IHandbagService _handbagService;
 
@@ -53,7 +56,7 @@ namespace PRN231_SU25_SE182929.api.Controllers
         }
 
         // POST api/<HandbagsController>
-        [Authorize(Roles ="1,2")]
+        [Authorize(Roles = "1,2")]
         [HttpPost]
         public async Task<int> Post([FromBody] HandbagRq rq)
         {
@@ -97,6 +100,15 @@ namespace PRN231_SU25_SE182929.api.Controllers
         public async Task<bool> Delete(int id)
         {
             return await _handbagService.RemoveAsync(id);
+        }
+
+        [Authorize]
+        [EnableQuery]
+        [HttpGet("search")]
+        public async Task<IActionResult> GetOData()
+        {
+            var handbags = await _handbagService.GetAllAsync();
+            return Ok(handbags.AsQueryable());
         }
     }
 }

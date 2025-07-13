@@ -1,6 +1,10 @@
+using HandbagManagementRepository.Models;
 using HandbagManagementService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -72,6 +76,19 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+});
+
+//!Odata
+static IEdmModel GetEdmModel()
+{
+    var odataBuilder = new ODataConventionModelBuilder();
+    odataBuilder.EntitySet<Handbag>("Handbag");
+    return odataBuilder.GetEdmModel();
+}
+builder.Services.AddControllers().AddOData(options =>
+{
+    options.Select().Filter().OrderBy().Expand().SetMaxTop(null).Count();
+    options.AddRouteComponents("odata", GetEdmModel());
 });
 
 var app = builder.Build();
